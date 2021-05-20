@@ -1,0 +1,7 @@
+pyocr
+pyocr.builders
+difflib
+numpy
+pandas
+PIL
+streamlit
