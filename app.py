@@ -38,12 +38,12 @@ lang = langs[2]
 print("Will use lang '%s'" % (lang))
 
 # 画像ファイル読み込み
-def read_image(dic, count_same_score, path):
+def read_image(dic, path):
     race_image = Image.open(path)
     # st.image(path)
-    dic, count_same_score = update_dic(dic, race_image, count_same_score)
+    dic = update_dic(dic, race_image)
 
-    return dic, count_same_score
+    return dic
 
 # 文字列ならばchar_nameに、数字ならばscoreに。
 def txt_arrange(txt):
@@ -108,18 +108,12 @@ def judge_char_name(txt):
     return txt
 
 # 辞書のスコアリストに写真から読み取ったスコアを追加。
-def update_score(dic, txt, count_same_score):
+def update_score(dic, txt):
     try:
         if txt[1] not in dic[txt[0]]:
             dic[txt[0]].append(txt[1])
         else:
-            count_same_score += 1
-            # print(count_same_score)
-            if count_same_score > 2:
-                print("最新のスコア情報と同じものです。")
-                sys.exit()
-            else:
-                pass
+            pass
     except KeyError:
         dic[txt[0]] = [txt[1]]
     except Exception as e:
@@ -127,7 +121,7 @@ def update_score(dic, txt, count_same_score):
         print("line162 some error")
         dic[txt[0]].append(txt[1])
 
-    return dic, count_same_score
+    return dic
 
 def append_average(dic):
     try:
@@ -139,7 +133,7 @@ def append_average(dic):
         ave = sum(dic[key])/len(dic[key])
         dic[key].append(round(ave, 1))
 
-def update_dic(dic, image, count_same_score):
+def update_dic(dic, image):
     for box in capture_list:
         im_capture = image.crop(box)
         im_capture = fill_mvp(im_capture)
@@ -148,9 +142,9 @@ def update_dic(dic, image, count_same_score):
 
         txt = judge_char_name(txt)
 
-        dic, count_same_score = update_score(dic, txt, count_same_score)
+        dic = update_score(dic, txt)
 
-    return dic, count_same_score
+    return dic
 
 def dic_to_df(dic):
     char_index = []
@@ -161,6 +155,8 @@ def dic_to_df(dic):
             break
         else:
             pass
+    for key in dic:
+        print(key, dic[key])
     for key in dic:
         df_dic[key] = []
     for key in dic:
@@ -175,7 +171,6 @@ def dic_to_df(dic):
     return df
 
 def main():
-    count_same_score = 0
     dic = {}
     append_average(dic)
     st.title('スコア分析')
@@ -199,7 +194,7 @@ def main():
             comment = st.empty()
             comment.write('集計を開始します')
             for file in upload_file:
-                read_image(dic, count_same_score, file)
+                read_image(dic, file)
             append_average(dic)
             df = dic_to_df(dic)
             st.write(df)
